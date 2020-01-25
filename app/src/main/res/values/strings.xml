@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">inSport</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_navigation">NavigationActivity</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_my_navigation">MyNavigation</string>
+    <string name="App_id">ca-app-pub-6030271375051075~3223807488</string>
+    <string name="Banner_id">ca-app-pub-6030271375051075/4139531778</string>
+    <string name="_0_0_0">0:0:0</string>
+    <string-array name="speedList">
+        <item>Скорость</item>
+        <item>Максимальная скорость</item>
+        <item>Средняя скорость</item>
+    </string-array>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string-array name="routeInfoTitle">
+        <item>Карта</item>
+        <item>Информация</item>
+
+    </string-array>
+</resources>
