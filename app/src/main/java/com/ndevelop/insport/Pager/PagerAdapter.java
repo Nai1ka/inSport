@@ -2,6 +2,7 @@ package com.ndevelop.insport.Pager;
 
 import android.content.Context;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -15,10 +16,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class PagerAdapter extends FragmentPagerAdapter  {
     private Context context = null;
-    private GoogleMap mMap;
     public PagerAdapter(Context context, FragmentManager mgr) {
         super(mgr);
         this.context = context;
+
     }
 
     @Override
@@ -29,14 +30,13 @@ public class PagerAdapter extends FragmentPagerAdapter  {
     @Override
     public int getItemPosition(Object object) {
         return POSITION_NONE;
-    }
+}
     @Override
     public Fragment getItem(int position) {
 
             return PagerInfoFragment.newInstance(position);
 
     }
-
     @Override
     public String getPageTitle(int position) {
         switch (position) {

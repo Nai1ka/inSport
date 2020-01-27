@@ -60,16 +60,19 @@ public class PagerInfoFragment extends Fragment implements GoogleMap.OnMyLocatio
         }
         SupportMapFragment mapFragment =(SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.historyFragmentMap);
         mapFragment.getMapAsync(this);
-       switch (pageNumber) {
-            case 0:
-                mapFragment.getView().setVisibility(v.VISIBLE);
-                int selected_route=mSettings.getInt(SELECTED_ROUTE,0);
-                Toast.makeText(getActivity(), ""+selected_route, Toast.LENGTH_SHORT).show();
-                break;
-            case 1:
-                mapFragment.getView().setVisibility(v.GONE);
-                break;
-        }
+
+            switch (pageNumber) {
+                case 0:
+                    mapFragment.getView().setVisibility(v.VISIBLE);
+                    int selected_route=mSettings.getInt(SELECTED_ROUTE,0);
+                    Toast.makeText(getActivity(), ""+selected_route, Toast.LENGTH_SHORT).show();
+                    break;
+                case 1:
+                    mapFragment.getView().setVisibility(v.GONE);
+                    break;
+            }
+
+
         return v;
     }
 
@@ -90,5 +93,12 @@ public class PagerInfoFragment extends Fragment implements GoogleMap.OnMyLocatio
         mMap.addMarker(new MarkerOptions()
                 .position(new LatLng(0, 0))
                 .title("Hello world"));
+    }
+    public void update(){
+        mMap.addMarker(new MarkerOptions()
+                .position(new LatLng(6, 6))
+                .title("Hello world"));
+        Toast.makeText(getActivity(), "update", Toast.LENGTH_SHORT).show();
+
     }
 }

@@ -11,8 +11,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.ndevelop.insport.NavigationActivity;
 import com.ndevelop.insport.Pager.PagerAdapter;
 import com.ndevelop.insport.R;
+
+import org.json.JSONException;
 
 
 public class RouteInfoFragment extends Fragment {
@@ -38,19 +41,20 @@ public class RouteInfoFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_route_info, container, false);
         ViewPager pager= v.findViewById(R.id.Pager);
+
         pager.setAdapter(new PagerAdapter(getContext(), getActivity().getSupportFragmentManager()));
-        pager.getAdapter().notifyDataSetChanged();
+        if(pager.getAdapter()!=null) pager.getAdapter().notifyDataSetChanged();
         return v;
     }
-
 
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+
+        //
 
     }
 

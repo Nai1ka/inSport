@@ -39,6 +39,7 @@ public class NavigationActivity extends AppCompatActivity
     private SharedPreferences mSettings;
     private static final String APP_SETTINGS = "Settings";
     private static final String SELECTED_ROUTE = "SelectedRoute";
+    private int current_fragment=0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,10 +75,9 @@ public class NavigationActivity extends AppCompatActivity
         mSettings = getSharedPreferences(APP_SETTINGS, Context.MODE_PRIVATE);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.setCheckedItem(R.id.nav_map);
-        manager.beginTransaction().add(R.id.mainLayout, mapsFragment).commit();
-        manager.beginTransaction().add(R.id.mainLayout, historyFragment).hide(historyFragment).commit();
-        manager.beginTransaction().add(R.id.mainLayout, creditFragment).hide(creditFragment).commit();
-        manager.beginTransaction().add(R.id.mainLayout, routeInfoFragment).hide(routeInfoFragment).commit();
+        manager.beginTransaction().add(R.id.mainLayout, mapsFragment,"map").commit();
+
+
 
 
     }
@@ -101,23 +101,50 @@ public class NavigationActivity extends AppCompatActivity
 
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-
-
         int id = item.getItemId();
-        if (id == R.id.nav_map && !(navigationView.getMenu().findItem(R.id.nav_map).isChecked())) {
 
-            manager.beginTransaction()
-                    .hide(creditFragment)
-                    .hide(historyFragment)
-                    .show(mapsFragment)
-                    .commit();
+
+        if (id == R.id.nav_map && !(navigationView.getMenu().findItem(R.id.nav_map).isChecked())) {
+            current_fragment=0;
+            if(manager.findFragmentByTag("map").isHidden()){
+                manager.beginTransaction()
+                        .show(mapsFragment)
+                        .commit();
+            }
+            if(manager.findFragmentByTag("history")!=null) {
+
+                manager.beginTransaction()
+                        .remove(historyFragment)
+                        .commit();
+            }
+            if(manager.findFragmentByTag("credits")!=null){
+                manager.beginTransaction()
+                        .remove(creditFragment)
+                        .commit();
+            }
 
         } else if (id == R.id.nav_history) {
-            manager.beginTransaction()
-                    .hide(mapsFragment)
-                    .hide(creditFragment)
-                    .show(historyFragment)
-                    .commit();
+
+            if(manager.findFragmentByTag("map").isVisible()){
+                manager.beginTransaction()
+                        .hide(mapsFragment)
+                        .commit();
+            }
+
+                if (manager.findFragmentByTag("history") == null) {
+
+                    manager.beginTransaction()
+                            .add(R.id.mainLayout, historyFragment, "history")
+                            .commit();
+                }
+                if (manager.findFragmentByTag("credits") != null) {
+                    manager.beginTransaction()
+                            .remove(creditFragment)
+                            .commit();
+                }
+
+
+
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) {
@@ -125,11 +152,22 @@ public class NavigationActivity extends AppCompatActivity
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_credits) {
-            manager.beginTransaction()
-                    .hide(mapsFragment)
-                    .hide(historyFragment)
-                    .show(creditFragment)
-                    .commit();
+            if(manager.findFragmentByTag("map").isVisible()){
+                manager.beginTransaction()
+                        .hide(mapsFragment)
+                        .commit();
+            }
+            if(manager.findFragmentByTag("history")!=null) {
+
+                manager.beginTransaction()
+                        .remove(historyFragment)
+                        .commit();
+            }
+            if(manager.findFragmentByTag("credits")==null){
+                manager.beginTransaction()
+                        .add(R.id.mainLayout,creditFragment,"credits")
+                        .commit();
+            }
 
         }
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -142,13 +180,11 @@ public static void change_title(String str){
 }
 public void fromFragmentData(Integer value) {
 mSettings.edit().putInt(SELECTED_ROUTE,value).apply();
-   // Toast.makeText(this, mSettings.getInt(SELECTED_ROUTE,0)+"", Toast.LENGTH_SHORT).show();
+
     manager.beginTransaction()
-            .show(routeInfoFragment)
-            .hide(historyFragment)
+            .add(R.id.mainLayout,routeInfoFragment)
+            .remove(historyFragment)
             .addToBackStack(null)
-            //.replace(R.id.mainLayout,routeInfoFragment)
             .commit();
     }
 }
-//TODO исправить переходы фрагментов
