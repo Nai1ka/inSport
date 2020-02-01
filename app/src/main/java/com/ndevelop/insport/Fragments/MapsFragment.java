@@ -38,22 +38,18 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.ndevelop.insport.MyLocationService;
 import com.ndevelop.insport.NavigationActivity;
 import com.ndevelop.insport.R;
+import com.ndevelop.insport.Utils.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -99,11 +95,11 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
     private View view_medium;
     private View view_background;
     private List<LatLng> points;
-
+    private boolean first_point=true;
     private Handler timerHandler = new Handler();
     private PolylineOptions polylineOptions = new PolylineOptions()
             .color(Color.GREEN)
-            .width(8);
+            .width(6);
     private double old_latitude = 0;
     private double old_longitude = 0;
     private ArrayList<Integer> list_of_speeds = new ArrayList<>();
@@ -190,6 +186,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                     old_longitude = 0;
                     maxSpeed = 0;
                     averageSpeed = 0;
+                    first_point=true;
                 } else {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                     builder.setTitle("Включите GPS")
@@ -222,7 +219,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                 pauseButton.setVisibility(View.GONE);
 
 
-                if (distance>0 && points != null) {
+                if (distance > 0 && points != null) {
                     mEditor.putInt(APP_SETTINGS_NUMBER_OF_ROUTES, mSettings.getInt(APP_SETTINGS_NUMBER_OF_ROUTES, 0) + 1);
                     mEditor.apply();
 
@@ -237,7 +234,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                     JSONObject main_json = new JSONObject();
                     if (mSettings.getInt(APP_SETTINGS_NUMBER_OF_ROUTES, 0) > 1) {
                         try {
-                            main_json = new JSONObject(read_data(getActivity(), "routes.json").toString());
+                            main_json = new JSONObject(Utils.read(getActivity(), "routes.json").toString());
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -253,7 +250,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    write_data(getActivity(), "routes.json", main_json.toString());
+                    Utils.write(getActivity(), "routes.json", main_json.toString());
 
                 }
             }
@@ -268,6 +265,8 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                     past_minutes = minutes;
                     timerHandler.removeCallbacks(timerRunnable);
                     pauseButton.setImageResource(R.drawable.ic_start_button);
+                    if(points!=null)
+                        Toast.makeText(getActivity(), ""+points.toString(), Toast.LENGTH_SHORT).show();
                 }
                 if (isPause) {
                     startTime = System.currentTimeMillis();
@@ -357,13 +356,21 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
 
     @SuppressLint("SetTextI18n")
     public void buildData(Double latitude, Double longitude, Float speed, Float accuracy) {
-
         if (latitude != old_latitude && longitude != old_longitude) {
             LatLng myLatLng = new LatLng(latitude, longitude);
 
+
             points = route.getPoints();
-            if (isStart && !isPause) {
-                if (accuracy < 50) {
+
+            if (isStart && !isPause && accuracy<50) {
+
+
+                    if(first_point){
+                        mMap.addCircle(new CircleOptions().center(myLatLng).radius(0.2)
+                                .fillColor(Color.YELLOW).strokeColor(Color.YELLOW));
+                        first_point=false;
+                    }
+
 
                     points.add(myLatLng);
                     route.setPoints(points);
@@ -389,7 +396,6 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                     last_latitude = latitude;
                     last_longitude = longitude;
 
-                }
             }
         }
         old_latitude = latitude;
@@ -412,46 +418,11 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
 
     private boolean gpsStatus() {
         LocationManager locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
 
-    private boolean write_data(Context context, String fileName, String jsonString) {
-        try {
-            FileOutputStream fos = context.openFileOutput(fileName, Context.MODE_PRIVATE);
-            if (jsonString != null) {
-                fos.write(jsonString.getBytes());
-            }
-            fos.close();
-            return true;
-        } catch (FileNotFoundException fileNotFound) {
-            return false;
-        } catch (IOException ioException) {
-            return false;
-        }
 
-
-    }
-
-    private JSONObject read_data(Context context, String fileName) {
-        try {
-            FileInputStream fis = context.openFileInput(fileName);
-            InputStreamReader isr = new InputStreamReader(fis);
-            BufferedReader bufferedReader = new BufferedReader(isr);
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                sb.append(line);
-            }
-            return new JSONObject(sb.toString());
-        } catch (FileNotFoundException fileNotFound) {
-            return null;
-        } catch (IOException ioException) {
-            return null;
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 }
 
 

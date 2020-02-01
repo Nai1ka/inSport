@@ -3,17 +3,15 @@ package com.ndevelop.insport;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
-
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentManager;
-
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
@@ -179,8 +177,9 @@ public static void change_title(String str){
     toolbar.setTitle(str);
 }
 public void fromFragmentData(Integer value) {
-mSettings.edit().putInt(SELECTED_ROUTE,value).apply();
-
+    Bundle mArg = new Bundle();
+    mArg.putInt("numberOfSelectedRoute", value+1);
+    routeInfoFragment.setArguments(mArg);
     manager.beginTransaction()
             .add(R.id.mainLayout,routeInfoFragment)
             .remove(historyFragment)
