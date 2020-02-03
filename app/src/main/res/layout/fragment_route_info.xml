@@ -7,15 +7,44 @@
     android:layout_height="match_parent"
     tools:context=".Fragments.RouteInfoFragment" >
 
-    <fragment
-        android:id="@+id/history_map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="300sp"
-        app:layout_constraintBottom_toBottomOf="@+id/startButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:context=".Fragments.MapsFragment" />
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <fragment
+                android:id="@+id/history_map"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="300sp"
+                tools:context=".Fragments.MapsFragment" />
+
+            <TextView
+                android:id="@+id/distanceText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Расстояние:"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/averageSpeedText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Средняя скорость"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/speedText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Максимальная скорость:"
+                android:textSize="20sp" />
+        </LinearLayout>
+    </ScrollView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
 

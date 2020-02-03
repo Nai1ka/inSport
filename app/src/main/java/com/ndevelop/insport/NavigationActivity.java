@@ -3,15 +3,16 @@ package com.ndevelop.insport;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentManager;
+
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
@@ -23,6 +24,7 @@ import com.ndevelop.insport.Fragments.CreditFragment;
 import com.ndevelop.insport.Fragments.HistoryFragment;
 import com.ndevelop.insport.Fragments.MapsFragment;
 import com.ndevelop.insport.Fragments.RouteInfoFragment;
+import com.ndevelop.insport.Fragments.SettingsFragment;
 
 public class NavigationActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -31,13 +33,15 @@ public class NavigationActivity extends AppCompatActivity
     NavigationView navigationView;
     public FragmentManager manager = getSupportFragmentManager();
     MapsFragment mapsFragment = new MapsFragment();
-    RouteInfoFragment routeInfoFragment= new RouteInfoFragment();
+    RouteInfoFragment routeInfoFragment = new RouteInfoFragment();
     HistoryFragment historyFragment = new HistoryFragment();
     CreditFragment creditFragment = new CreditFragment();
+    SettingsFragment settingsFragment = new SettingsFragment();
     private SharedPreferences mSettings;
     private static final String APP_SETTINGS = "Settings";
     private static final String SELECTED_ROUTE = "SelectedRoute";
-    private int current_fragment=0;
+    private int current_fragment = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,9 +77,7 @@ public class NavigationActivity extends AppCompatActivity
         mSettings = getSharedPreferences(APP_SETTINGS, Context.MODE_PRIVATE);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.setCheckedItem(R.id.nav_map);
-        manager.beginTransaction().add(R.id.mainLayout, mapsFragment,"map").commit();
-
-
+        manager.beginTransaction().add(R.id.mainLayout, mapsFragment, "map").commit();
 
 
     }
@@ -103,87 +105,115 @@ public class NavigationActivity extends AppCompatActivity
 
 
         if (id == R.id.nav_map && !(navigationView.getMenu().findItem(R.id.nav_map).isChecked())) {
-            current_fragment=0;
-            if(manager.findFragmentByTag("map").isHidden()){
+            if (manager.findFragmentByTag("map").isHidden()) {
                 manager.beginTransaction()
                         .show(mapsFragment)
                         .commit();
             }
-            if(manager.findFragmentByTag("history")!=null) {
+            if (manager.findFragmentByTag("history") != null) {
 
                 manager.beginTransaction()
                         .remove(historyFragment)
                         .commit();
             }
-            if(manager.findFragmentByTag("credits")!=null){
+            if (manager.findFragmentByTag("credits") != null) {
                 manager.beginTransaction()
                         .remove(creditFragment)
+                        .commit();
+            }
+            if (manager.findFragmentByTag("settings") != null) {
+                manager.beginTransaction()
+                        .remove(settingsFragment)
                         .commit();
             }
 
         } else if (id == R.id.nav_history) {
 
-            if(manager.findFragmentByTag("map").isVisible()){
+            if (manager.findFragmentByTag("map").isVisible()) {
                 manager.beginTransaction()
                         .hide(mapsFragment)
                         .commit();
             }
 
-                if (manager.findFragmentByTag("history") == null) {
+            if (manager.findFragmentByTag("history") == null) {
 
-                    manager.beginTransaction()
-                            .add(R.id.mainLayout, historyFragment, "history")
-                            .commit();
-                }
-                if (manager.findFragmentByTag("credits") != null) {
-                    manager.beginTransaction()
-                            .remove(creditFragment)
-                            .commit();
-                }
-
-
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
+                manager.beginTransaction()
+                        .add(R.id.mainLayout, historyFragment, "history")
+                        .commit();
+            }
+            if (manager.findFragmentByTag("credits") != null) {
+                manager.beginTransaction()
+                        .remove(creditFragment)
+                        .commit();
+            }
+            if (manager.findFragmentByTag("settings") != null) {
+                manager.beginTransaction()
+                        .remove(settingsFragment)
+                        .commit();
+            }
         } else if (id == R.id.nav_credits) {
-            if(manager.findFragmentByTag("map").isVisible()){
+            if (manager.findFragmentByTag("map").isVisible()) {
                 manager.beginTransaction()
                         .hide(mapsFragment)
                         .commit();
             }
-            if(manager.findFragmentByTag("history")!=null) {
-
+            if (manager.findFragmentByTag("history") != null) {
                 manager.beginTransaction()
                         .remove(historyFragment)
                         .commit();
             }
-            if(manager.findFragmentByTag("credits")==null){
+            if (manager.findFragmentByTag("credits") == null) {
                 manager.beginTransaction()
-                        .add(R.id.mainLayout,creditFragment,"credits")
+                        .add(R.id.mainLayout, creditFragment, "credits")
+                        .commit();
+            }
+            if (manager.findFragmentByTag("settings") != null) {
+                manager.beginTransaction()
+                        .remove(settingsFragment)
+                        .commit();
+            }
+        } else if (id == R.id.nav_settings) {
+            if (manager.findFragmentByTag("map").isVisible()) {
+                manager.beginTransaction()
+                        .hide(mapsFragment)
                         .commit();
             }
 
+            if (manager.findFragmentByTag("history") != null) {
+                manager.beginTransaction()
+                        .remove(historyFragment)
+                        .commit();
+            }
+            if (manager.findFragmentByTag("credits") != null) {
+                manager.beginTransaction()
+                        .remove(creditFragment)
+                        .commit();
+            }
+            if (manager.findFragmentByTag("settings") == null) {
+                manager.beginTransaction()
+                        .add(R.id.mainLayout, settingsFragment, "settings")
+                        .commit();
+            }
         }
+
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
-public static void change_title(String str){
-    toolbar.setTitle(str);
-}
-public void fromFragmentData(Integer value) {
-    Bundle mArg = new Bundle();
-    mArg.putInt("numberOfSelectedRoute", value+1);
-    routeInfoFragment.setArguments(mArg);
-    manager.beginTransaction()
-            .add(R.id.mainLayout,routeInfoFragment)
-            .remove(historyFragment)
-            .addToBackStack(null)
-            .commit();
+
+    public static void change_title(String str) {
+        toolbar.setTitle(str);
+    }
+
+    public void fromFragmentData(Integer value) {
+        Bundle mArg = new Bundle();
+        mArg.putInt("numberOfSelectedRoute", value + 1);
+        routeInfoFragment.setArguments(mArg);
+        manager.beginTransaction()
+                .add(R.id.mainLayout, routeInfoFragment)
+                .remove(historyFragment)
+                .addToBackStack(null)
+                .commit();
     }
 }

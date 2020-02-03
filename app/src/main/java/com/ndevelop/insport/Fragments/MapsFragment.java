@@ -72,12 +72,12 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
     private int past_hours;
     private long startTime = 0;
     private int maxSpeed = 0;
-    private int averageSpeed = 0;
+    private float averageSpeed = 0;
     private LocationRequest locationRequest;
     private static MapsFragment instance;
     private GoogleMap mMap;
     private Polyline route;
-
+    String locationProvider = LocationManager.NETWORK_PROVIDER;
     private static final String APP_SETTINGS = "Settings";
     private static final String APP_SETTINGS_ENTRY = "FirstEntry";
     private static final String APP_SETTINGS_WEIGHT = "Weight";
@@ -95,14 +95,16 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
     private View view_medium;
     private View view_background;
     private List<LatLng> points;
-    private boolean first_point=true;
+    private ArrayList<Integer> speedList = new ArrayList<>();
+    private boolean first_point = true;
     private Handler timerHandler = new Handler();
     private PolylineOptions polylineOptions = new PolylineOptions()
             .color(Color.GREEN)
             .width(6);
+    LatLng myLatLng;
     private double old_latitude = 0;
     private double old_longitude = 0;
-    private ArrayList<Integer> list_of_speeds = new ArrayList<>();
+
 
     public static MapsFragment getInstance() {
         return instance;
@@ -143,6 +145,10 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
         okButton = v.findViewById(R.id.okButton);
         view_medium = v.findViewById(R.id.view_medium);
         view_background = v.findViewById(R.id.view_background);
+        speedList.add(10);
+        speedList.add(11);
+
+
         Spinner speedSpinner = v.findViewById(R.id.speedSpinner);
         speedSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @SuppressLint("SetTextI18n")
@@ -186,7 +192,24 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                     old_longitude = 0;
                     maxSpeed = 0;
                     averageSpeed = 0;
-                    first_point=true;
+                    first_point = true;
+
+                    // I suppressed the missing-permission warning because this wouldn't be executed in my
+                    // case without location services being enabled
+                    if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+                        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                12);
+                    } else {
+                        LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+                        Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
+                        ArrayList<LatLng> tempList = new ArrayList<>();
+                        tempList.add(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()));
+                        route.setPoints(tempList);
+                        mMap.addCircle(new CircleOptions().center(tempList.get(0)).radius(0.2)
+                                .fillColor(Color.YELLOW).strokeColor(Color.YELLOW));
+                    }
+
                 } else {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                     builder.setTitle("Включите GPS")
@@ -217,7 +240,11 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                 startButton.setVisibility(View.VISIBLE);
                 stopButton.setVisibility(View.GONE);
                 pauseButton.setVisibility(View.GONE);
-
+                pauseButton.setImageResource(R.drawable.ic_pause_button);
+                mMap.addCircle(new CircleOptions().center(myLatLng).radius(0.2)
+                        .fillColor(Color.RED).strokeColor(Color.RED));
+//TODO проверить эту строку (ниже)
+                //  getActivity().stopService(new Intent(getActivity(), MyLocationService.class));
 
                 if (distance > 0 && points != null) {
                     mEditor.putInt(APP_SETTINGS_NUMBER_OF_ROUTES, mSettings.getInt(APP_SETTINGS_NUMBER_OF_ROUTES, 0) + 1);
@@ -244,6 +271,8 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
 
                         fresh_json.put("route", data);
                         fresh_json.put("distance", roundUp(distance, 0));
+                        fresh_json.put("maxSpeed", maxSpeed);
+                        fresh_json.put("averageSpeed", averageSpeed);
                         fresh_json.put("time", hours + ":" + minutes + ":" + seconds);
                         main_json.put("" + mSettings.getInt(APP_SETTINGS_NUMBER_OF_ROUTES, 0), fresh_json);
 
@@ -265,14 +294,29 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                     past_minutes = minutes;
                     timerHandler.removeCallbacks(timerRunnable);
                     pauseButton.setImageResource(R.drawable.ic_start_button);
-                    if(points!=null)
-                        Toast.makeText(getActivity(), ""+points.toString(), Toast.LENGTH_SHORT).show();
+                    if (myLatLng != null)
+                        mMap.addCircle(new CircleOptions().center(myLatLng).radius(0.2).fillColor(Color.BLUE).strokeColor(Color.BLUE));
+
                 }
                 if (isPause) {
                     startTime = System.currentTimeMillis();
                     timerHandler.postDelayed(timerRunnable, 0);
                     pauseButton.setImageResource(R.drawable.ic_pause_button);
                     route = mMap.addPolyline(polylineOptions);
+                    if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+                        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                12);
+                    } else {
+                        //LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+                        //Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
+                        ArrayList<LatLng> tempList = new ArrayList<>();
+                        tempList.add(myLatLng);
+                        route.setPoints(tempList);
+                        mMap.addCircle(new CircleOptions().center(tempList.get(0)).radius(0.2).fillColor(Color.BLUE).strokeColor(Color.BLUE));
+
+                    }
+
                 }
                 isPause = !isPause;
             }
@@ -312,8 +356,6 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
             view_medium.setVisibility(View.GONE);
             view_background.setVisibility(View.GONE);
         }
-
-
         return v;
     }
 
@@ -338,7 +380,6 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
         locationRequest.setInterval(1000);
     }
 
-
     @Override
     public void onMapReady(GoogleMap map) {
         mMap = map;
@@ -357,44 +398,37 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
     @SuppressLint("SetTextI18n")
     public void buildData(Double latitude, Double longitude, Float speed, Float accuracy) {
         if (latitude != old_latitude && longitude != old_longitude) {
-            LatLng myLatLng = new LatLng(latitude, longitude);
-
-
+            myLatLng = new LatLng(latitude, longitude);
             points = route.getPoints();
-
-            if (isStart && !isPause && accuracy<50) {
-
-
-                    if(first_point){
-                        mMap.addCircle(new CircleOptions().center(myLatLng).radius(0.2)
-                                .fillColor(Color.YELLOW).strokeColor(Color.YELLOW));
-                        first_point=false;
+            if (isStart && !isPause && accuracy < 50) {
+                if (first_point) {
+                    first_point = false;
+                }
+                points.add(myLatLng);
+                route.setPoints(points);
+                int correctSpeed = (roundUp((float) (speed * 3.6), 1)).intValue();
+                if (correctSpeed != 0) speedList.add(correctSpeed);
+                if (correctSpeed > maxSpeed) maxSpeed = correctSpeed;
+                if (speedType == 0) speedText.setText(correctSpeed + " км/ч");
+                if (speedType == 1) speedText.setText(maxSpeed + " км/ч");
+                if (speedType == 2) {
+                    int sum = 0;
+                    for (int i = 0; i < speedList.size(); i++) {
+                        sum += speedList.get(i);
                     }
-
-
-                    points.add(myLatLng);
-                    route.setPoints(points);
-                    int correctSpeed = (roundUp((float) (speed * 3.6), 1)).intValue();
-                    list_of_speeds.add(correctSpeed);
-                    if (correctSpeed > maxSpeed) maxSpeed = correctSpeed;
-                    if (speedType == 0) speedText.setText(correctSpeed + " км/ч");
-                    if (speedType == 1) speedText.setText(maxSpeed + " км/ч");
-                    if (speedType == 2) {
-                        for (int i = 0; i < list_of_speeds.size(); i++) {
-                            averageSpeed += list_of_speeds.get(i);
-                        }
-                        speedText.setText(averageSpeed + " км/ч");
-                    }
-                    float[] results = new float[1];
-                    if (last_latitude != 0 && last_longitude != 0) {
-                        Location.distanceBetween(last_latitude, last_longitude,
-                                latitude, longitude,
-                                results);
-                    }
-                    distance = distance + results[0];
-                    distanceText.setText(roundUp(distance, 0) + " метров");
-                    last_latitude = latitude;
-                    last_longitude = longitude;
+                    averageSpeed = sum / (speedList.size());
+                    speedText.setText(averageSpeed + " км/ч");
+                }
+                float[] results = new float[1];
+                if (last_latitude != 0 && last_longitude != 0) {
+                    Location.distanceBetween(last_latitude, last_longitude,
+                            latitude, longitude,
+                            results);
+                }
+                distance = distance + results[0];
+                distanceText.setText(roundUp(distance, 0) + " метров");
+                last_latitude = latitude;
+                last_longitude = longitude;
 
             }
         }
@@ -418,7 +452,6 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
 
     private boolean gpsStatus() {
         LocationManager locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
-
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
 
