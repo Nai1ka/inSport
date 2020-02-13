@@ -172,8 +172,8 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
         startButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (gpsStatus()) NavigationActivity.change_title("inSport");
-                if (gpsStatus()) {
+                if (Utils.gpsStatus(getContext())) {
+                    NavigationActivity.change_title("inSport");
                     startTime = System.currentTimeMillis();
                     startButton.setVisibility(View.GONE);
                     pauseButton.setVisibility(View.VISIBLE);
@@ -193,21 +193,19 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                     maxSpeed = 0;
                     averageSpeed = 0;
                     first_point = true;
-
-                    // I suppressed the missing-permission warning because this wouldn't be executed in my
-                    // case without location services being enabled
-                    if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-                        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                                12);
-                    } else {
+                    if (!Utils.checkGPSPermissoins(getActivity())) {
                         LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-                        Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
+                        @SuppressLint("MissingPermission")
+                       // Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
                         ArrayList<LatLng> tempList = new ArrayList<>();
-                        tempList.add(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()));
+
+
+                        //Toast.makeText(getActivity(), "" + Utils.getLastKnownLocation(getActivity(), getContext()), Toast.LENGTH_SHORT).show();
+                        tempList.add(myLatLng);
                         route.setPoints(tempList);
-                        mMap.addCircle(new CircleOptions().center(tempList.get(0)).radius(0.2)
-                                .fillColor(Color.YELLOW).strokeColor(Color.YELLOW));
+                         mMap.addCircle(new CircleOptions().center(tempList.get(0)).radius(0.2)
+                          .fillColor(Color.YELLOW).strokeColor(Color.YELLOW));
+                         //TODO исправить, что первая точка появлется лишь после первого изменения положения(при нажатии на кнопку старт первое изменение не учитывается)
                     }
 
                 } else {
@@ -243,9 +241,6 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                 pauseButton.setImageResource(R.drawable.ic_pause_button);
                 mMap.addCircle(new CircleOptions().center(myLatLng).radius(0.2)
                         .fillColor(Color.RED).strokeColor(Color.RED));
-//TODO проверить эту строку (ниже)
-                //  getActivity().stopService(new Intent(getActivity(), MyLocationService.class));
-
                 if (distance > 0 && points != null) {
                     mEditor.putInt(APP_SETTINGS_NUMBER_OF_ROUTES, mSettings.getInt(APP_SETTINGS_NUMBER_OF_ROUTES, 0) + 1);
                     mEditor.apply();
@@ -253,8 +248,6 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                     for (int i = 0; i < points.size(); i++) {
                         data.add(points.get(i).latitude);
                         data.add(points.get(i).longitude);
-
-
                     }
                     points.clear();
 
@@ -270,7 +263,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                     try {
 
                         fresh_json.put("route", data);
-                        fresh_json.put("distance", roundUp(distance, 0));
+                        fresh_json.put("distance", Utils.roundUp(distance, 0));
                         fresh_json.put("maxSpeed", maxSpeed);
                         fresh_json.put("averageSpeed", averageSpeed);
                         fresh_json.put("time", hours + ":" + minutes + ":" + seconds);
@@ -303,20 +296,12 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                     timerHandler.postDelayed(timerRunnable, 0);
                     pauseButton.setImageResource(R.drawable.ic_pause_button);
                     route = mMap.addPolyline(polylineOptions);
-                    if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-                        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                                12);
-                    } else {
-                        //LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-                        //Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
+                    if (!Utils.checkGPSPermissoins(getActivity())) {
                         ArrayList<LatLng> tempList = new ArrayList<>();
                         tempList.add(myLatLng);
                         route.setPoints(tempList);
                         mMap.addCircle(new CircleOptions().center(tempList.get(0)).radius(0.2).fillColor(Color.BLUE).strokeColor(Color.BLUE));
-
                     }
-
                 }
                 isPause = !isPause;
             }
@@ -383,11 +368,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
     @Override
     public void onMapReady(GoogleMap map) {
         mMap = map;
-        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    12);
-        } else {
+        if (!Utils.checkGPSPermissoins(getActivity())) {
             mMap.setPadding(0, 110, 0, 0);
             mMap.setMyLocationEnabled(true);
             mMap.setOnMyLocationButtonClickListener(this);
@@ -406,7 +387,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                 }
                 points.add(myLatLng);
                 route.setPoints(points);
-                int correctSpeed = (roundUp((float) (speed * 3.6), 1)).intValue();
+                int correctSpeed = (Utils.roundUp((float) (speed * 3.6), 1)).intValue();
                 if (correctSpeed != 0) speedList.add(correctSpeed);
                 if (correctSpeed > maxSpeed) maxSpeed = correctSpeed;
                 if (speedType == 0) speedText.setText(correctSpeed + " км/ч");
@@ -426,7 +407,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                             results);
                 }
                 distance = distance + results[0];
-                distanceText.setText(roundUp(distance, 0) + " метров");
+                distanceText.setText(Utils.roundUp(distance, 0) + " метров");
                 last_latitude = latitude;
                 last_longitude = longitude;
 
@@ -436,9 +417,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
         old_longitude = longitude;
     }
 
-    private static BigDecimal roundUp(float value, int digits) {
-        return new BigDecimal("" + value).setScale(digits, BigDecimal.ROUND_HALF_UP);
-    }
+
 
     @Override
     public void onMyLocationClick(@NonNull Location location) {
@@ -448,11 +427,6 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
     @Override
     public boolean onMyLocationButtonClick() {
         return false;
-    }
-
-    private boolean gpsStatus() {
-        LocationManager locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
 
 
