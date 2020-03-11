@@ -55,6 +55,7 @@ public class RouteInfoFragment extends Fragment implements OnMapReadyCallback {
         try {
 
             info_about_route = new JSONObject(Utils.read(getActivity(), "routes.json").getString(numberOfRoutes + 1 - getArguments().getInt("numberOfSelectedRoute") + ""));
+            Toast.makeText(getActivity(), info_about_route+"", Toast.LENGTH_SHORT).show();
             String raw = info_about_route.getString("route");
             String[] raw_array = raw.substring(1, raw.length() - 1).split(",");
             cameraPosition = new LatLng(Double.parseDouble(raw_array[0]), Double.parseDouble(raw_array[1]));
