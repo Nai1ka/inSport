@@ -1,6 +1,8 @@
 package com.ndevelop.insport.Fragments;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -55,18 +57,18 @@ public class RouteInfoFragment extends Fragment implements OnMapReadyCallback {
         try {
 
             info_about_route = new JSONObject(Utils.read(getActivity(), "routes.json").getString(numberOfRoutes + 1 - getArguments().getInt("numberOfSelectedRoute") + ""));
-            Toast.makeText(getActivity(), info_about_route+"", Toast.LENGTH_SHORT).show();
             String raw = info_about_route.getString("route");
             String[] raw_array = raw.substring(1, raw.length() - 1).split(",");
             cameraPosition = new LatLng(Double.parseDouble(raw_array[0]), Double.parseDouble(raw_array[1]));
             for (int i = 0; i < raw_array.length; i = i + 2) {
                 coordinates.add(new LatLng(Double.parseDouble(raw_array[i]), Double.parseDouble(raw_array[i + 1])));
             }
-            Toast.makeText(getActivity(), "" + info_about_route.getString("distance"), Toast.LENGTH_SHORT).show();
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

@@ -14,6 +14,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -38,10 +39,12 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Cap;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.model.RoundCap;
 import com.ndevelop.insport.MyLocationService;
 import com.ndevelop.insport.NavigationActivity;
 import com.ndevelop.insport.R;
@@ -96,7 +99,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
     private View view_background;
     private List<LatLng> points;
     private ArrayList<Integer> speedList = new ArrayList<>();
-    private boolean first_point = true;
+    private ArrayList<LatLng> resultPoints = new ArrayList<>();
     private Handler timerHandler = new Handler();
     private PolylineOptions polylineOptions = new PolylineOptions()
             .color(Color.GREEN)
@@ -192,19 +195,9 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                     old_longitude = 0;
                     maxSpeed = 0;
                     averageSpeed = 0;
-                    first_point = true;
                     if (!Utils.checkGPSPermissoins(getActivity())) {
-                        LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-                        @SuppressLint("MissingPermission")
-                       // Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
-                        ArrayList<LatLng> tempList = new ArrayList<>();
-
-
-                        //Toast.makeText(getActivity(), "" + Utils.getLastKnownLocation(getActivity(), getContext()), Toast.LENGTH_SHORT).show();
-                        tempList.add(myLatLng);
-                        route.setPoints(tempList);
-                         mMap.addCircle(new CircleOptions().center(tempList.get(0)).radius(0.2)
-                          .fillColor(Color.YELLOW).strokeColor(Color.YELLOW));
+                        // mMap.addCircle(new CircleOptions().center(tempList.get(0)).radius(0.2)
+                        //  .fillColor(Color.YELLOW).strokeColor(Color.YELLOW));
                          //TODO исправить, что первая точка появлется лишь после первого изменения положения(при нажатии на кнопку старт первое изменение не учитывается)
                     }
 
@@ -244,11 +237,15 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                 if (distance > 0 && points != null) {
                     mEditor.putInt(APP_SETTINGS_NUMBER_OF_ROUTES, mSettings.getInt(APP_SETTINGS_NUMBER_OF_ROUTES, 0) + 1);
                     mEditor.apply();
-
                     for (int i = 0; i < points.size(); i++) {
-                        data.add(points.get(i).latitude);
-                        data.add(points.get(i).longitude);
+                        resultPoints.add(points.get(i));
                     }
+                    Log.d("DEBUG", "resultPoints"+resultPoints);
+                    for (int i = 0; i < resultPoints.size(); i++) {
+                        data.add(resultPoints.get(i).latitude);
+                        data.add(resultPoints.get(i).longitude);
+                    }
+                    resultPoints.clear();
                     points.clear();
 
                     JSONObject main_json = new JSONObject();
@@ -287,15 +284,18 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                     past_minutes = minutes;
                     timerHandler.removeCallbacks(timerRunnable);
                     pauseButton.setImageResource(R.drawable.ic_start_button);
+                    route.setEndCap(new RoundCap());
+                    //TODO сделать EndCap
                     if (myLatLng != null)
                         mMap.addCircle(new CircleOptions().center(myLatLng).radius(0.2).fillColor(Color.BLUE).strokeColor(Color.BLUE));
-
+                    for (int i = 0; i < points.size(); i++) {
+                        resultPoints.add(points.get(i));
+                    }
                 }
                 if (isPause) {
                     startTime = System.currentTimeMillis();
                     timerHandler.postDelayed(timerRunnable, 0);
                     pauseButton.setImageResource(R.drawable.ic_pause_button);
-                    route = mMap.addPolyline(polylineOptions);
                     if (!Utils.checkGPSPermissoins(getActivity())) {
                         ArrayList<LatLng> tempList = new ArrayList<>();
                         tempList.add(myLatLng);
@@ -382,11 +382,12 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
             myLatLng = new LatLng(latitude, longitude);
             points = route.getPoints();
             if (isStart && !isPause && accuracy < 50) {
-                if (first_point) {
-                    first_point = false;
-                }
                 points.add(myLatLng);
                 route.setPoints(points);
+                Log.d("DEBUG", "LatLng"+myLatLng);
+                Log.d("DEBUG",  "points"+points);
+                Log.d("DEBUG", "route"+route.getPoints());
+                Log.d("DEBUG", "--------------------");
                 int correctSpeed = (Utils.roundUp((float) (speed * 3.6), 1)).intValue();
                 if (correctSpeed != 0) speedList.add(correctSpeed);
                 if (correctSpeed > maxSpeed) maxSpeed = correctSpeed;

@@ -1,6 +1,8 @@
 package com.ndevelop.insport;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
@@ -48,6 +50,7 @@ public class NavigationActivity extends AppCompatActivity
         setContentView(R.layout.activity_navigation);
         toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("inSport");
+        setSupportActionBar(toolbar);
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -81,14 +84,20 @@ public class NavigationActivity extends AppCompatActivity
 
 
     }
-
-
+    @Override
+    public void onBackPressed() {
+        if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            getSupportFragmentManager().popBackStackImmediate();
+        }
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.navigation, menu);
         return true;
     }
+
+
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -127,6 +136,8 @@ public class NavigationActivity extends AppCompatActivity
                         .commit();
             }
 
+
+
         } else if (id == R.id.nav_history) {
 
             if (manager.findFragmentByTag("map").isVisible()) {
@@ -151,6 +162,10 @@ public class NavigationActivity extends AppCompatActivity
                         .remove(settingsFragment)
                         .commit();
             }
+
+
+
+
         } else if (id == R.id.nav_credits) {
             if (manager.findFragmentByTag("map").isVisible()) {
                 manager.beginTransaction()
@@ -172,6 +187,7 @@ public class NavigationActivity extends AppCompatActivity
                         .remove(settingsFragment)
                         .commit();
             }
+
         } else if (id == R.id.nav_settings) {
             if (manager.findFragmentByTag("map").isVisible()) {
                 manager.beginTransaction()
@@ -194,6 +210,7 @@ public class NavigationActivity extends AppCompatActivity
                         .add(R.id.mainLayout, settingsFragment, "settings")
                         .commit();
             }
+
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -211,7 +228,7 @@ public class NavigationActivity extends AppCompatActivity
         mArg.putInt("numberOfSelectedRoute", value + 1);
         routeInfoFragment.setArguments(mArg);
         manager.beginTransaction()
-                .add(R.id.mainLayout, routeInfoFragment)
+                .add(R.id.mainLayout, routeInfoFragment,"routeInfo")
                 .remove(historyFragment)
                 .addToBackStack(null)
                 .commit();
