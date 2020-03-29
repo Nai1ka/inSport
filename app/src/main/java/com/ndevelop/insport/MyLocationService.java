@@ -10,7 +10,7 @@ import com.google.android.gms.location.LocationResult;
 import com.ndevelop.insport.Fragments.MapsFragment;
 
 public class MyLocationService extends BroadcastReceiver {
-    public static final String ACTION_PROCESS_UPDATE = " com.ndevelop.googlemapstest.UPDATE_LOCATION";
+    public static final String ACTION_PROCESS_UPDATE = " com.ndevelop.insport.UPDATE_LOCATION";
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent != null) {

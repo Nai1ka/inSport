@@ -11,7 +11,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -29,7 +28,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -39,7 +37,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.Cap;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
@@ -53,7 +50,6 @@ import com.ndevelop.insport.Utils.Utils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,7 +76,6 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
     private static MapsFragment instance;
     private GoogleMap mMap;
     private Polyline route;
-    String locationProvider = LocationManager.NETWORK_PROVIDER;
     private static final String APP_SETTINGS = "Settings";
     private static final String APP_SETTINGS_ENTRY = "FirstEntry";
     private static final String APP_SETTINGS_WEIGHT = "Weight";
