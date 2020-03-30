@@ -167,4 +167,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageView
+        android:id="@+id/iv_accuracy"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/ic_signal_cellular_2_bar_black_24dp"
+        app:layout_constraintTop_toBottomOf="@+id/view_up"
+        tools:layout_editor_absoluteX="0dp"
+        android:scaleX="-1"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

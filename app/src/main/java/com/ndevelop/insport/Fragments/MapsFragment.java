@@ -22,6 +22,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -90,6 +91,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
     private EditText weightText;
     private EditText heightText;
     private Button okButton;
+    private ImageView iv_accuracy;
     private View view_medium;
     private View view_background;
     private List<LatLng> points;
@@ -143,6 +145,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
         okButton = v.findViewById(R.id.okButton);
         view_medium = v.findViewById(R.id.view_medium);
         view_background = v.findViewById(R.id.view_background);
+        iv_accuracy = v.findViewById(R.id.iv_accuracy);
         speedList.add(10);
         speedList.add(11);
 
@@ -191,6 +194,10 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                     maxSpeed = 0;
                     averageSpeed = 0;
                     if (!Utils.checkGPSPermissoins(getActivity())) {
+                        ArrayList<LatLng> tempList = new ArrayList<>();
+
+                        //Toast.makeText(getActivity(), "" + Utils.getLastKnownLocation(getActivity(), getContext()), Toast.LENGTH_SHORT).show();
+
                         // mMap.addCircle(new CircleOptions().center(tempList.get(0)).radius(0.2)
                         //  .fillColor(Color.YELLOW).strokeColor(Color.YELLOW));
                          //TODO исправить, что первая точка появлется лишь после первого изменения положения(при нажатии на кнопку старт первое изменение не учитывается)
@@ -294,7 +301,8 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                     if (!Utils.checkGPSPermissoins(getActivity())) {
                         ArrayList<LatLng> tempList = new ArrayList<>();
                         tempList.add(myLatLng);
-                        route.setPoints(tempList);
+                        //route.setPoints(tempList);
+                        //TODO сдесь багает и стирает всю карту
                         mMap.addCircle(new CircleOptions().center(tempList.get(0)).radius(0.2).fillColor(Color.BLUE).strokeColor(Color.BLUE));
                     }
                 }
@@ -373,6 +381,10 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
 
     @SuppressLint("SetTextI18n")
     public void buildData(Double latitude, Double longitude, Float speed, Float accuracy) {
+        if(accuracy>50) iv_accuracy.setImageResource(R.drawable.ic_signal_cellular_0_bar_black_24dp);
+        else if (accuracy<50 && accuracy>25) iv_accuracy.setImageResource(R.drawable.ic_signal_cellular_2_bar_black_24dp);
+        else if (accuracy<25 && accuracy>10) iv_accuracy.setImageResource(R.drawable.ic_signal_cellular_3_bar_black_24dp);
+        else if(accuracy<10) iv_accuracy.setImageResource(R.drawable.ic_signal_cellular_4_bar_black_24dp);
         if (latitude != old_latitude && longitude != old_longitude) {
             myLatLng = new LatLng(latitude, longitude);
             points = route.getPoints();
@@ -406,6 +418,10 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMyLocationButt
                 distanceText.setText(Utils.roundUp(distance, 0) + " метров");
                 last_latitude = latitude;
                 last_longitude = longitude;
+
+
+
+
 
             }
         }
